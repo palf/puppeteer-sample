@@ -1,3 +1,4 @@
+const fs = require('fs')
 const puppeteer = require('puppeteer')
 
 function readTitle (page) {
@@ -28,7 +29,8 @@ function waitForPageChange (page, href) {
       .then(assertEquals(href))
 }
 
-function thisTest(page) {
+function thisTest (page) {
+  const testName = 'post-test'
   return openLink(page)
     .then(readTitle(page))
     .then(assertEquals('Cybersource POST test'))
@@ -38,53 +40,44 @@ function thisTest(page) {
     .then(enterCardDetails(page))
     .then(enterCVN(page))
     .then(enterExpiryDate(page))
-    .then(screenshot(page))
+    .then(screenshot(page, testName))
 }
 
-function enterExpiryDate(page) {
+function enterExpiryDate (page) {
   return () => page.$('select#card_expiry_month')
-    .then((el) => el.type("01"))
+    .then((el) => el.type('01'))
     .then(() => page.$('select#card_expiry_year')
-      .then((el) => el.type("2019"))
+      .then((el) => el.type('2019'))
     )
 }
 
-function enterCVN(page) {
+function enterCVN (page) {
   return () => page.$('input#card_cvn')
-    .then((el) => el.type("123"))
+    .then((el) => el.type('123'))
 }
 
-function enterCardDetails(page) {
+function enterCardDetails (page) {
   return () => page.$('input#card_number')
-    .then((el) => el.type("4111111111111111"))
+    .then((el) => el.type('4111111111111111'))
 }
 
-function selectCardType(page, type) {
-  const selectError = (e) => {
-    console.log('error!')
-    return ({
-      error: e,
-      message: 'could not select card 001'
-    })
-  }
+function selectCardType (page, type) {
+  // const selectError = (e) => {
+  //   console.log('error!')
+  //   return ({
+  //     error: e,
+  //     message: 'could not select card 001'
+  //   })
+  // }
 
-  return () => page.select('input#card_type_001')
+  return () => page.click('input#card_type_001')
 }
 
-function screenshot(page) {
-  return () => page.screenshot({path: './screenshot.png'})
-}
-
-function takeScreenshotPDF (page) {
-  const writePDFException = (e) => ({
-    message: 'unable to write pdf',
-    error: e.message
+function screenshot (page, testName) {
+  return () => page.screenshot({
+    path: `./screenshots/${new Date().toISOString()}-${testName}.png`,
+    fullPage: true
   })
-
-  return () => page
-    .pdf({path: 'hn.pdf', format: 'A4'})
-    .then(() => ({ message: 'all good' }))
-    .catch(writePDFException)
 }
 
 function openLink (page) {
@@ -111,6 +104,7 @@ function runTest (page, someTest) {
 }
 
 (async () => {
+  fs.mkdirSync('./screenshots')
   const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']})
   const page = await browser.newPage()
   const outcome = await runTest(page, thisTest)
