@@ -21,6 +21,25 @@ function readTitle (page) {
   return () => page.title()
 }
 
+function waitForPageChange (page) {
+  const pageChangeException = (e) => ({
+    error: e,
+    message: 'could not change page'
+  })
+
+  return () => page
+    .waitForNavigation({ timeout: 5000 })
+    .catch(pageChangeException)
+}
+
+function takeScreenshot (page, testName, label) {
+  const path = `./screenshots/${testName}_${label}.png`
+  const options = { path: path, fullPage: true }
+
+  return (v) => page.screenshot(options)
+    .then(() => v)
+}
+
 function clickConfirm (page) {
   return () => page.click('.confirm-button')
 }
@@ -35,17 +54,6 @@ function clickPay (page) {
 
 function selectCardType (page, type) {
   return () => page.click('input#card_type_001')
-}
-
-function waitForPageChange (page) {
-  const pageChangeException = (e) => ({
-    error: e,
-    message: 'could not change page'
-  })
-
-  return () => page
-    .waitForNavigation({ timeout: 5000 })
-    .catch(pageChangeException)
 }
 
 function enterExpiryDate (page, month, year) {
@@ -67,24 +75,17 @@ function enterCardNumber (page, number) {
   return type(page, 'input#card_number', number)
 }
 
-function takeScreenshot (page, testName, label) {
-  const path = `./screenshots/${testName}_${label}.png`
-  const options = { path: path, fullPage: true }
-
-  return (v) => page.screenshot(options)
-    .then(() => v)
-}
-
 module.exports = {
+  openLink,
+  readTitle,
+  takeScreenshot,
+  waitForPageChange,
+
   clickConfirm,
   clickPay,
   clickSubmit,
   enterCVN,
   enterCardNumber,
   enterExpiryDate,
-  openLink,
-  readTitle,
-  selectCardType,
-  takeScreenshot,
-  waitForPageChange
+  selectCardType
 }

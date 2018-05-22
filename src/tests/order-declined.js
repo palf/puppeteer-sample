@@ -13,10 +13,10 @@ const card = {
   }
 }
 
-function orderDeclinedTest (page) {
+function orderDeclinedTest ({page, baseUrl}) {
   const localScreenshot = a.takeScreenshot.bind(null, page, `order-declined`)
 
-  return a.openLink(page, 'http://localhost:3000/')
+  return a.openLink(page, baseUrl)
     .then(a.readTitle(page))
     .then(e.assertEquals('Cybersource POST test'))
     .then(localScreenshot('01_before-confirm'))
